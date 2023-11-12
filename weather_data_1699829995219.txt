@@ -1,0 +1,2 @@
+Weather in Gdansk:
+scattered clouds, Temperature: 279.15°C
