@@ -1,0 +1,69 @@
+import fetch from 'node-fetch';
+import { Octokit } from '@octokit/rest';
+
+async function fetchWeatherData(city, apiKey) {
+  const response = await fetch(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`);
+  if (response.ok) {
+    const data = await response.json();
+    const content = `Weather in ${city} at ${new Date().toLocaleString()}: ${data.weather[0].description}, Temperature: ${data.main.temp}°C`;
+
+    return content;
+  } else {
+    throw new Error('Failed to fetch weather data');
+  }
+}
+
+async function pushToGitHub(content, token, username, repository) {
+  const octokit = new Octokit({ auth: token });
+  const owner = username;
+  const repo = repository;
+  const branch = 'main';
+
+  const contentEncoded = Buffer.from(content).toString('base64');
+  const date = new Date().toISOString().replace(/:/g, '-');
+
+  try {
+    const file = await octokit.repos.createOrUpdateFileContents({
+      owner,
+      repo,
+      path: `weather_data_${date}.txt`,
+      message: `Daily Weather Update at ${new Date().toLocaleString()}`,
+      content: contentEncoded,
+      branch,
+    });
+
+    console.log('File created:', file.data);
+  } catch (error) {
+    console.error('Error creating file:', error);
+  }
+}
+
+async function performDailyWeatherActivity(token, username, repository, apiKey, city) {
+  try {
+    const weatherContent = await fetchWeatherData(city, apiKey);
+    await pushToGitHub(weatherContent, token, username, repository);
+  } catch (error) {
+    console.error('Error during daily weather activity:', error);
+  }
+}
+
+async function main() {
+  const gitTokens = [
+    'token_name',
+    // Add other tokens if needed
+  ];
+
+  const username = 'user_name'; // Replace with your GitHub username
+  const repository = 'WeatherReports'; // Replace with the repository name
+  const city = 'Gdansk'; // Set the city for weather data retrieval
+
+  const apiKey = 'api_name'; // Your OpenWeatherMap API key
+
+  // Run the daily activity for each GitHub token
+  for (let index = 0; index < gitTokens.length; index++) {
+    console.log(`Running daily weather activity with token ${index + 1}...`);
+    await performDailyWeatherActivity(gitTokens[index], username, repository, apiKey, city);
+  }
+}
+
+main();
