@@ -2,11 +2,15 @@ import fetch from 'node-fetch';
 import { Octokit } from '@octokit/rest';
 
 async function fetchWeatherData(city, apiKey) {
-  const response = await fetch(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`);
+  const response = await fetch(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
   if (response.ok) {
     const data = await response.json();
+    const { description } = data.weather[0];
+    const temperatureC = data.main.temp;
+    const windSpeed = data.wind.speed;
+    const humidity = data.main.humidity;
     const currentTime = new Date().toLocaleString();
-    const content = `Weather in ${city} at ${currentTime}: ${data.weather[0].description}, Temperature: ${data.main.temp}°C`;
+    const content = `Weather in ${city} at ${currentTime}: ${description}, Temperature: ${temperatureC}°C, Wind Speed: ${windSpeed} m/s, Humidity: ${humidity}%`;
 
     return { content, currentTime };
   } else {
@@ -58,7 +62,7 @@ async function main() {
   const repository = 'WeatherReports'; // Replace with the repository name
   const city = 'Gdansk'; // Set the city for weather data retrieval
 
-  const apiKey = 'api'; // Your OpenWeatherMap API key
+  const apiKey = 'apikey'; // Your OpenWeatherMap API key
 
   // Run the daily activity for each GitHub token using for...of loop
   for (const token of gitTokens) {
