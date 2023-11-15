@@ -2,32 +2,38 @@ import fetch from 'node-fetch';
 import { Octokit } from '@octokit/rest';
 
 async function fetchWeatherData(city, apiKey) {
-  const response = await fetch(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
-  if (response.ok) {
-    const data = await response.json();
-    const { description } = data.weather[0];
-    const temperatureC = data.main.temp;
-    const windSpeed = data.wind.speed;
-    const humidity = data.main.humidity;
-    const currentTime = new Date().toLocaleString();
-    const content = `Weather in ${city} at ${currentTime}: ${description}, Temperature: ${temperatureC}°C, Wind Speed: ${windSpeed} m/s, Humidity: ${humidity}%`;
+  try {
+    const response = await fetch(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
+    
+    if (response.ok) {
+      const data = await response.json();
+      const { description } = data.weather[0];
+      const temperatureC = data.main.temp;
+      const windSpeed = data.wind.speed;
+      const humidity = data.main.humidity;
+      const currentTime = new Date().toLocaleString();
+      const content = `Weather in ${city} at ${currentTime}: ${description}, Temperature: ${temperatureC}°C, Wind Speed: ${windSpeed} m/s, Humidity: ${humidity}%`;
 
-    return { content, currentTime };
-  } else {
-    throw new Error('Failed to fetch weather data');
+      return { content, currentTime };
+    } else {
+      throw new Error('Failed to fetch weather data');
+    }
+  } catch (error) {
+    console.error('Error in fetchWeatherData:', error);
+    throw error;
   }
 }
 
 async function pushToGitHub(content, token, username, repository, currentTime) {
-  const octokit = new Octokit({ auth: token });
-  const owner = username;
-  const repo = repository;
-  const branch = 'main';
-  const date = currentTime.replace(/[,:]/g, '').split(' ').join('_');
-
-  const contentEncoded = Buffer.from(content).toString('base64');
-
   try {
+    const octokit = new Octokit({ auth: token });
+    const owner = username;
+    const repo = repository;
+    const branch = 'main';
+    const date = currentTime.replace(/[,:]/g, '').split(' ').join('_');
+
+    const contentEncoded = Buffer.from(content).toString('base64');
+
     const file = await octokit.repos.createOrUpdateFileContents({
       owner,
       repo,
@@ -39,7 +45,8 @@ async function pushToGitHub(content, token, username, repository, currentTime) {
 
     console.log('File created:', file.data);
   } catch (error) {
-    console.error('Error creating file:', error);
+    console.error('Error in pushToGitHub:', error);
+    throw error;
   }
 }
 
@@ -49,6 +56,7 @@ async function performDailyWeatherActivity(token, username, repository, apiKey, 
     await pushToGitHub(content, token, username, repository, currentTime);
   } catch (error) {
     console.error('Error during daily weather activity:', error);
+    throw error;
   }
 }
 
@@ -58,11 +66,10 @@ async function main() {
     // Add other tokens if needed
   ];
 
-  const username = 'name'; // Replace with your GitHub username
-  const repository = 'WeatherReports'; // Replace with the repository name
-  const city = 'Gdansk'; // Set the city for weather data retrieval
-
-  const apiKey = 'apikey'; // Your OpenWeatherMap API key
+  const username = name'; // Replace with your GitHub username
+  const repository = 'repo'; // Replace with the repository name
+  const city = 'city'; // Set the city for weather data retrieval
+  const apiKey = 'api'; // Your OpenWeatherMap API key
 
   // Run the daily activity for each GitHub token using for...of loop
   for (const token of gitTokens) {
