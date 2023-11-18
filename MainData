@@ -62,19 +62,24 @@ async function performDailyWeatherActivity(token, username, repository, apiKey, 
 
 async function main() {
   const gitTokens = [
-    'token',
+    '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',
     // Add other tokens if needed
   ];
 
-  const username = name'; // Replace with your GitHub username
-  const repository = 'repo'; // Replace with the repository name
-  const city = 'city'; // Set the city for weather data retrieval
-  const apiKey = 'api'; // Your OpenWeatherMap API key
+  const username = 'edwin960'; // Replace with your GitHub username
+  const repository = 'WeatherReports'; // Replace with the repository name
+  const city = 'Gdansk'; // Set the city for weather data retrieval
+  const apiKey = 'de7c07b73c3fef84c3d8709cbe5125d7'; // Your OpenWeatherMap API key
 
   // Run the daily activity for each GitHub token using for...of loop
   for (const token of gitTokens) {
     console.log(`Running daily weather activity with token...`);
-    await performDailyWeatherActivity(token, username, repository, apiKey, city);
+    try {
+      await performDailyWeatherActivity(token, username, repository, apiKey, city);
+    } catch (error) {
+      console.error('Error during daily weather activity:', error);
+      // Handle or log the error as needed
+    }
   }
 }
 
