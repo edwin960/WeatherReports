@@ -34,6 +34,7 @@ async function pushToGitHub(content, token, username, repository, currentTime) {
 
     const contentEncoded = Buffer.from(content).toString('base64');
 
+    console.log('Attempting to create or update file on GitHub...');
     const file = await octokit.repos.createOrUpdateFileContents({
       owner,
       repo,
@@ -53,6 +54,8 @@ async function pushToGitHub(content, token, username, repository, currentTime) {
 async function performDailyWeatherActivity(token, username, repository, apiKey, city) {
   try {
     const { content, currentTime } = await fetchWeatherData(city, apiKey);
+    console.log('Fetched weather data:', content);
+    
     await pushToGitHub(content, token, username, repository, currentTime);
   } catch (error) {
     console.error('Error during daily weather activity:', error);
@@ -62,14 +65,14 @@ async function performDailyWeatherActivity(token, username, repository, apiKey, 
 
 async function main() {
   const gitTokens = [
-    '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',
+    'token',
     // Add other tokens if needed
   ];
 
   const username = 'edwin960'; // Replace with your GitHub username
   const repository = 'WeatherReports'; // Replace with the repository name
   const city = 'Gdansk'; // Set the city for weather data retrieval
-  const apiKey = 'de7c07b73c3fef84c3d8709cbe5125d7'; // Your OpenWeatherMap API key
+  const apiKey = 'api'; // Your OpenWeatherMap API key
 
   // Run the daily activity for each GitHub token using for...of loop
   for (const token of gitTokens) {
